@@ -5,7 +5,6 @@ import org.apache.spark.sql.functions._
 import java.io.File
 
 
-
 object App {
   def main(args: Array[String]): Unit = {
     val spark = SparkSession.builder()
@@ -35,11 +34,12 @@ object App {
       .filter(col("Rating") >= 4.0)
       .orderBy(col("Rating").desc)
 
-    df_2.coalesce(1).write
+    df_2.write
       .mode(SaveMode.Overwrite)
       .option("header", "true")
       .option("delimiter", "§")
-      .csv("part2/best_apps.csv")
+      .csv("part2/best_apps")
+
 
     //---------PART3---------
     val gpsDf: DataFrame = spark.read
@@ -103,10 +103,10 @@ object App {
         "Average_Sentiment_Polarity"
       )
 
-    df_1_3.coalesce(1).write
+    df_1_3.write
       .mode(SaveMode.Overwrite)
       .option("compression", "gzip")
-      .parquet("part4/googleplaystore_metrics")
+      .parquet("part4/googleplaystore_cleaned")
 
 
     //---------PART5---------
@@ -125,22 +125,14 @@ object App {
         avg("Average_Sentiment_Polarity").as("Average_Sentiment_Polarity")
       )
 
-    df_4.coalesce(1).write
+    df_4.write
       .mode(SaveMode.Overwrite)
       .option("compression", "gzip")
       .parquet("part5/googleplaystore_metrics")
 
-    val outputFile = new File("part5/googleplaystore_metrics")
-    val outputFileList = outputFile.listFiles()
-    if (outputFileList.length == 1) {
-      val outputFileRenamed = new File("import java.io.File" + ".parquet")
-      outputFileList(0).renameTo(outputFileRenamed)
-    } else {
-      println("Error: Multiple or no files found in output directory.")
-    }
 
     spark.stop()
+    sys.exit(0)
   }
-
 
 }
