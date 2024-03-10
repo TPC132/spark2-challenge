@@ -1,11 +1,11 @@
 package com.challenge
 
-import org.apache.spark.sql.{DataFrame, SparkSession}
+import org.apache.spark.sql.{DataFrame, SaveMode, SparkSession}
 import org.apache.spark.sql.functions._
+import java.io.File
 
-/**
- * @author ${user.name}
- */
+
+
 object App {
   def main(args: Array[String]): Unit = {
     val spark = SparkSession.builder()
@@ -35,10 +35,11 @@ object App {
       .filter(col("Rating") >= 4.0)
       .orderBy(col("Rating").desc)
 
-    /*  df_2.write
-        .option("header", "true")
-        .option("delimiter", "§")
-        .csv("results/best_apps.csv")*/
+    df_2.coalesce(1).write
+      .mode(SaveMode.Overwrite)
+      .option("header", "true")
+      .option("delimiter", "§")
+      .csv("part2/best_apps.csv")
 
     //---------PART3---------
     val gpsDf: DataFrame = spark.read
@@ -82,10 +83,6 @@ object App {
       .withColumn("Genres", split(col("Genres"), ";"))
       .withColumn("Last_Updated", date_format(to_date(col("Last_Updated"), "MMMM d, yyyy"), "yyyy-MM-dd").cast("date"))
 
-    val teste = df_3.select("App").count()
-
-    println(teste)
-
 
     //---------PART4---------
     val df_1_3: DataFrame = df_3
@@ -106,10 +103,10 @@ object App {
         "Average_Sentiment_Polarity"
       )
 
-    df_1_3.write
-      .format("parquet")
+    df_1_3.coalesce(1).write
+      .mode(SaveMode.Overwrite)
       .option("compression", "gzip")
-      .save("googleplaystore_cleaned")
+      .parquet("part4/googleplaystore_metrics")
 
 
     //---------PART5---------
@@ -128,12 +125,19 @@ object App {
         avg("Average_Sentiment_Polarity").as("Average_Sentiment_Polarity")
       )
 
-    df_4.write
-      .format("parquet")
+    df_4.coalesce(1).write
+      .mode(SaveMode.Overwrite)
       .option("compression", "gzip")
-      .save("googleplaystore_metrics")
+      .parquet("part5/googleplaystore_metrics")
 
-    df_4.show(100)
+    val outputFile = new File("part5/googleplaystore_metrics")
+    val outputFileList = outputFile.listFiles()
+    if (outputFileList.length == 1) {
+      val outputFileRenamed = new File("import java.io.File" + ".parquet")
+      outputFileList(0).renameTo(outputFileRenamed)
+    } else {
+      println("Error: Multiple or no files found in output directory.")
+    }
 
     spark.stop()
   }
