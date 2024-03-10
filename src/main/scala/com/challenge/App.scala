@@ -51,7 +51,7 @@ object App {
       .option("delimiter", ",")
       .csv("resources/googleplaystore.csv")
 
-    //df with removed app duplicates, string of categories and highest number of reviews
+    
     val optDF: DataFrame = gpsDf
       .withColumn(("Reviews"), col("Reviews").cast("long"))
       .groupBy("App")
