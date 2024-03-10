@@ -24,6 +24,8 @@ object App {
       .groupBy("App")
       .agg(avg("Sentiment_Polarity").as("Average_Sentiment_Polarity"))
 
+    //df_1.show(false)
+
 
     //---------PART2---------
     val df_2: DataFrame = spark.read
@@ -39,6 +41,8 @@ object App {
       .option("header", "true")
       .option("delimiter", "§")
       .csv("part2/best_apps")
+
+    //df_2.show(false)
 
 
     //---------PART3---------
@@ -83,6 +87,7 @@ object App {
       .withColumn("Genres", split(col("Genres"), ";"))
       .withColumn("Last_Updated", date_format(to_date(col("Last_Updated"), "MMMM d, yyyy"), "yyyy-MM-dd").cast("date"))
 
+    //df_3.show(false)
 
     //---------PART4---------
     val df_1_3: DataFrame = df_3
@@ -108,6 +113,8 @@ object App {
       .option("compression", "gzip")
       .parquet("part4/googleplaystore_cleaned")
 
+    //df_1_3.show(false)
+
 
     //---------PART5---------
     val df_4: DataFrame = df_3
@@ -130,6 +137,7 @@ object App {
       .option("compression", "gzip")
       .parquet("part5/googleplaystore_metrics")
 
+    //df_4.show(false)
 
     spark.stop()
     sys.exit(0)
